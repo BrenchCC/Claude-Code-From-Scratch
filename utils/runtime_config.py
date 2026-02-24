@@ -3,7 +3,7 @@
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any
+from typing import Any, Set
 
 
 BOOL_TRUE = {"1", "true", "yes", "y", "on"}
@@ -12,7 +12,19 @@ BOOL_FALSE = {"0", "false", "no", "n", "off"}
 
 @dataclass
 class RuntimeOptions:
-    """Runtime feature switches merged from CLI and environment variables."""
+    """Runtime feature switches merged from CLI and environment variables.
+
+    Args:
+        show_llm_response: Whether to log LLM responses.
+        stream: Whether to use streaming response mode.
+        thinking_mode: Thinking mode switch.
+        reasoning_effort: Thinking effort setting.
+        reasoning_preview_chars: Stream preview length for reasoning.
+        save_session: Whether to persist session events.
+        session_dir: Session output directory.
+        thinking_capability: Capability override for thinking support.
+        thinking_param_style: Request style for thinking params.
+    """
 
     show_llm_response: bool = False
     stream: bool = False
@@ -25,7 +37,11 @@ class RuntimeOptions:
     thinking_param_style: str = "auto"
 
     def as_dict(self) -> dict:
-        """Return JSON-serializable dict form for session metadata."""
+        """Return JSON-serializable dict form for session metadata.
+
+        Args:
+            None.
+        """
         return {
             "show_llm_response": self.show_llm_response,
             "stream": self.stream,
@@ -40,7 +56,11 @@ class RuntimeOptions:
 
 
 def add_runtime_args(parser: Any) -> None:
-    """Attach shared runtime flags to an argparse parser."""
+    """Attach shared runtime flags to an argparse parser.
+
+    Args:
+        parser: Target argparse parser.
+    """
     import argparse
 
     parser.add_argument(
@@ -94,7 +114,11 @@ def add_runtime_args(parser: Any) -> None:
 
 
 def runtime_options_from_args(args: Any) -> RuntimeOptions:
-    """Build runtime options with CLI > ENV > default precedence."""
+    """Build runtime options with CLI > ENV > default precedence.
+
+    Args:
+        args: Parsed argparse namespace.
+    """
     show_llm_response = _resolve_bool(
         cli_value = getattr(args, "show_llm_response", None),
         env_name = "AGENT_SHOW_LLM_RESPONSE",
@@ -160,38 +184,56 @@ def runtime_options_from_args(args: Any) -> RuntimeOptions:
 
 
 def _resolve_bool(cli_value: Any, env_name: str, default: bool) -> bool:
-    """Resolve bool with CLI > ENV > default precedence."""
+    """Resolve bool with CLI > ENV > default precedence.
+
+    Args:
+        cli_value: CLI value from argparse.
+        env_name: Environment variable name.
+        default: Fallback value.
+    """
     if cli_value is not None:
         return bool(cli_value)
 
-    raw_env = os.getenv(env_name)
-    if raw_env is None:
+    normalized_env = _read_normalized_env(env_name = env_name)
+    if normalized_env is None:
         return default
 
-    normalized = raw_env.strip().lower()
-    if normalized in BOOL_TRUE:
+    if normalized_env in BOOL_TRUE:
         return True
-    if normalized in BOOL_FALSE:
+    if normalized_env in BOOL_FALSE:
         return False
+
+    # Unknown strings (for example "maybe") intentionally fall back.
     return default
 
 
-def _resolve_enum(cli_value: Any, env_name: str, default: str, allowed: set) -> str:
-    """Resolve enum option with validation."""
+def _resolve_enum(cli_value: Any, env_name: str, default: str, allowed: Set[str]) -> str:
+    """Resolve enum option with validation.
+
+    Args:
+        cli_value: CLI value from argparse.
+        env_name: Environment variable name.
+        default: Fallback enum value.
+        allowed: Allowed enum values.
+    """
     if cli_value is not None and str(cli_value) in allowed:
         return str(cli_value)
 
-    raw_env = os.getenv(env_name)
-    if raw_env is not None:
-        normalized = raw_env.strip().lower()
-        if normalized in allowed:
-            return normalized
+    normalized_env = _read_normalized_env(env_name = env_name)
+    if normalized_env is not None and normalized_env in allowed:
+        return normalized_env
 
     return default
 
 
 def _resolve_int(cli_value: Any, env_name: str, default: int) -> int:
-    """Resolve int option with fallback to default on parse failure."""
+    """Resolve int option with fallback to default on parse failure.
+
+    Args:
+        cli_value: CLI value from argparse.
+        env_name: Environment variable name.
+        default: Fallback value.
+    """
     if cli_value is not None:
         return int(cli_value)
 
@@ -202,11 +244,18 @@ def _resolve_int(cli_value: Any, env_name: str, default: int) -> int:
     try:
         return int(raw_env.strip())
     except ValueError:
+        # Keep behavior stable: invalid integer env values are ignored.
         return default
 
 
 def _resolve_str(cli_value: Any, env_name: str, default: str) -> str:
-    """Resolve string option with CLI > ENV > default precedence."""
+    """Resolve string option with CLI > ENV > default precedence.
+
+    Args:
+        cli_value: CLI value from argparse.
+        env_name: Environment variable name.
+        default: Fallback value.
+    """
     if cli_value is not None and str(cli_value).strip():
         return str(cli_value)
 
@@ -215,3 +264,15 @@ def _resolve_str(cli_value: Any, env_name: str, default: str) -> str:
         return raw_env.strip()
 
     return default
+
+
+def _read_normalized_env(env_name: str) -> Any:
+    """Read and normalize env text to lowercase.
+
+    Args:
+        env_name: Environment variable name.
+    """
+    raw_env = os.getenv(env_name)
+    if raw_env is None:
+        return None
+    return raw_env.strip().lower()

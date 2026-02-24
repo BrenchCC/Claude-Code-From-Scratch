@@ -1,7 +1,7 @@
 """Thinking capability detection and request parameter selection."""
 
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional, Set
 
 
 _ALLOWED_CAPABILITIES = {"auto", "toggle", "always", "never"}
@@ -12,7 +12,12 @@ _ALLOWED_REASONING_EFFORT = {"none", "low", "medium", "high"}
 
 @dataclass
 class ThinkingPolicyState:
-    """Resolved thinking capability and parameter style for a runtime."""
+    """Resolved thinking capability and parameter style for a runtime.
+
+    Args:
+        capability: Effective capability flag.
+        param_style: Effective parameter style.
+    """
 
     capability: str = "never"
     param_style: str = "none"
@@ -24,14 +29,24 @@ def resolve_thinking_policy(
     capability_setting: str = "auto",
     param_style_setting: str = "auto",
 ) -> ThinkingPolicyState:
-    """Resolve effective thinking support by manual setting or lightweight probes."""
-    capability = (capability_setting or "auto").strip().lower()
-    param_style = (param_style_setting or "auto").strip().lower()
+    """Resolve effective thinking support by manual setting or lightweight probes.
 
-    if capability not in _ALLOWED_CAPABILITIES:
-        capability = "auto"
-    if param_style not in _ALLOWED_PARAM_STYLES:
-        param_style = "auto"
+    Args:
+        client: LLM client used for probe calls.
+        model: Target model identifier.
+        capability_setting: Manual capability override.
+        param_style_setting: Manual thinking-param style override.
+    """
+    capability = _normalize_setting(
+        value = capability_setting,
+        allowed = _ALLOWED_CAPABILITIES,
+        default = "auto",
+    )
+    param_style = _normalize_setting(
+        value = param_style_setting,
+        allowed = _ALLOWED_PARAM_STYLES,
+        default = "auto",
+    )
 
     if capability != "auto":
         resolved_style = param_style if param_style != "auto" else "enable_thinking"
@@ -43,15 +58,7 @@ def resolve_thinking_policy(
     if client is None or not model:
         return ThinkingPolicyState(capability = "never", param_style = "none")
 
-    styles_to_try = [
-        param_style,
-    ] if param_style != "auto" else [
-        "enable_thinking",
-        "reasoning_effort",
-        "both",
-    ]
-
-    for style in styles_to_try:
+    for style in _styles_to_probe(param_style = param_style):
         supports_on = _probe_support(
             client = client,
             model = model,
@@ -78,34 +85,71 @@ def build_thinking_params(
     thinking_mode: str,
     reasoning_effort: str,
 ) -> Dict[str, Any]:
-    """Build request parameters from policy + user mode."""
-    mode = (thinking_mode or "auto").strip().lower()
-    effort = (reasoning_effort or "none").strip().lower()
+    """Build request parameters from policy + user mode.
 
-    if mode not in _ALLOWED_MODES:
-        mode = "auto"
-    if effort not in _ALLOWED_REASONING_EFFORT:
-        effort = "none"
+    Args:
+        policy: Resolved runtime policy.
+        thinking_mode: Requested mode (auto/on/off).
+        reasoning_effort: Requested effort (none/low/medium/high).
+    """
+    mode = _normalize_setting(
+        value = thinking_mode,
+        allowed = _ALLOWED_MODES,
+        default = "auto",
+    )
+    effort = _normalize_setting(
+        value = reasoning_effort,
+        allowed = _ALLOWED_REASONING_EFFORT,
+        default = "none",
+    )
 
     if policy.capability == "never" or policy.param_style == "none":
         return {}
 
     enabled = _resolve_enabled_state(policy = policy, mode = mode)
     if enabled is None:
+        # No explicit request should be sent in this combination.
         return {}
 
-    if enabled:
-        return _params_for_enabled_state(
-            style = policy.param_style,
-            enabled = True,
-            reasoning_effort = effort,
-        )
-
-    return _params_for_enabled_state(style = policy.param_style, enabled = False)
+    return _params_for_enabled_state(
+        style = policy.param_style,
+        enabled = enabled,
+        reasoning_effort = effort,
+    )
 
 
-def _resolve_enabled_state(policy: ThinkingPolicyState, mode: str):
-    """Resolve whether request should force thinking on/off, or skip parameter."""
+def _normalize_setting(value: Any, allowed: Set[str], default: str) -> str:
+    """Normalize one string setting with allowed-set validation.
+
+    Args:
+        value: Raw user setting.
+        allowed: Allowed normalized values.
+        default: Fallback value.
+    """
+    normalized = (value or default).strip().lower()
+    if normalized in allowed:
+        return normalized
+    return default
+
+
+def _styles_to_probe(param_style: str) -> list:
+    """Build probe style order.
+
+    Args:
+        param_style: User-selected style or auto.
+    """
+    if param_style != "auto":
+        return [param_style]
+    return ["enable_thinking", "reasoning_effort", "both"]
+
+
+def _resolve_enabled_state(policy: ThinkingPolicyState, mode: str) -> Optional[bool]:
+    """Resolve whether request should force thinking on/off, or skip parameter.
+
+    Args:
+        policy: Resolved runtime policy.
+        mode: Requested mode (auto/on/off).
+    """
     if mode == "on":
         if policy.capability in {"toggle", "always"}:
             return True
@@ -116,7 +160,7 @@ def _resolve_enabled_state(policy: ThinkingPolicyState, mode: str):
             return False
         return None
 
-    # auto mode: only set explicit state when model is always-on.
+    # In auto mode, only always-on capability sends an explicit enable signal.
     if policy.capability == "always":
         return True
 
@@ -128,7 +172,13 @@ def _params_for_enabled_state(
     enabled: bool,
     reasoning_effort: str = "low",
 ) -> Dict[str, Any]:
-    """Translate desired enabled state to provider request params."""
+    """Translate desired enabled state to provider request params.
+
+    Args:
+        style: Param style identifier.
+        enabled: Whether thinking should be enabled.
+        reasoning_effort: Effort level used when enabled.
+    """
     if style == "enable_thinking":
         return {"enable_thinking": enabled}
 
@@ -147,7 +197,13 @@ def _params_for_enabled_state(
 
 
 def _probe_support(client: Any, model: str, params: Dict[str, Any]) -> bool:
-    """Run lightweight capability probe call."""
+    """Run lightweight capability probe call.
+
+    Args:
+        client: LLM client.
+        model: Target model identifier.
+        params: Probe parameters to test.
+    """
     try:
         client.chat.completions.create(
             model = model,
