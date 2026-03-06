@@ -1,0 +1,657 @@
+{
+  "generated_at": "2026-03-06T06:25:23",
+  "mode": "env",
+  "dotenv_path": ".env",
+  "dotenv_loaded_keys": [
+    "AGENT_REASONING_EFFORT",
+    "AGENT_REASONING_PREVIEW_CHARS",
+    "AGENT_SAVE_SESSION",
+    "AGENT_SESSION_DIR",
+    "AGENT_SHOW_LLM_RESPONSE",
+    "AGENT_STREAM",
+    "AGENT_THINKING_CAPABILITY",
+    "AGENT_THINKING_MODE",
+    "AGENT_THINKING_PARAM_STYLE",
+    "LLM_API_KEY",
+    "LLM_BASE_URL",
+    "LLM_MODEL"
+  ],
+  "real_queries_requested": [
+    "请用一句中文回答：你已收到真实环境测试请求。",
+    "请给出一条简短学习建议，不超过20字。"
+  ],
+  "real_query_logs": [
+    {
+      "test": "env_non_stream",
+      "query": "请用一句中文回答：你已收到真实环境测试请求。",
+      "response_preview": "好的，我已收到真实环境测试请求。",
+      "stream": false
+    },
+    {
+      "test": "env_stream",
+      "query": "请给出一条简短学习建议，不超过20字。",
+      "response_preview": "学思结合，每日复盘",
+      "stream": true,
+      "chunk_count": 174,
+      "content_chunks": 6
+    }
+  ],
+  "pattern": "",
+  "strict_coverage": true,
+  "summary": {
+    "tests_run": 25,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0,
+    "all_tests_passed": true,
+    "uncovered_function_count": 0,
+    "failing_function_count": 0,
+    "declared_unknown_target_count": 0,
+    "complete": true
+  },
+  "tests": [
+    {
+      "name": "__main__.TestEnvRealQueries.test_env_non_stream_real_query",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call.call_chat_completion"
+      ],
+      "duration_seconds": 2.710485
+    },
+    {
+      "name": "__main__.TestEnvRealQueries.test_env_stream_real_query",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call.call_chat_completion"
+      ],
+      "duration_seconds": 4.578394
+    },
+    {
+      "name": "__main__.TestFunctionMatrix.test_every_discovered_function_has_cover_annotation",
+      "status": "success",
+      "message": "",
+      "covers": [],
+      "duration_seconds": 0.015256
+    },
+    {
+      "name": "__main__.TestLLMCall.test_build_request_and_strip",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._build_request",
+        "utils.llm_call._strip_thinking_params"
+      ],
+      "duration_seconds": 5.8e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_invoke_with_optional_retry_reraises_non_thinking_errors",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._invoke_with_optional_thinking_retry"
+      ],
+      "duration_seconds": 9.1e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_low_level_coerce_read_and_dump_helpers",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._coerce_text",
+        "utils.llm_call._read_obj",
+        "utils.llm_call._safe_model_dump"
+      ],
+      "duration_seconds": 7.2e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_non_stream_call_and_assistant_message",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call.call_chat_completion",
+        "utils.llm_call.build_assistant_message",
+        "utils.llm_call._invoke_with_optional_thinking_retry",
+        "utils.llm_call._invoke_once",
+        "utils.llm_call._extract_content_from_message",
+        "utils.llm_call._extract_reasoning_from_message",
+        "utils.llm_call._collect_reasoning_segments",
+        "utils.llm_call._normalize_tool_calls"
+      ],
+      "duration_seconds": 7.6e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_retry_then_success_for_thinking_params",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._invoke_with_optional_thinking_retry"
+      ],
+      "duration_seconds": 6.7e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_stream_call_and_callbacks",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._invoke_stream",
+        "utils.llm_call._extract_first_delta",
+        "utils.llm_call._extract_content_from_delta",
+        "utils.llm_call._extract_reasoning_from_delta",
+        "utils.llm_call._merge_stream_tool_calls"
+      ],
+      "duration_seconds": 9.9e-05
+    },
+    {
+      "name": "__main__.TestLLMCall.test_thinking_error_signal_detection",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.llm_call._looks_like_thinking_param_error"
+      ],
+      "duration_seconds": 3.3e-05
+    },
+    {
+      "name": "__main__.TestReasoningRenderer.test_finalize_turn_and_expand_paths",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.reasoning_renderer.ReasoningRenderer.finalize_turn",
+        "utils.reasoning_renderer.ReasoningRenderer._build_hint",
+        "utils.reasoning_renderer.ReasoningRenderer._maybe_expand"
+      ],
+      "duration_seconds": 0.000443
+    },
+    {
+      "name": "__main__.TestReasoningRenderer.test_renderer_init_reset_write",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.reasoning_renderer.ReasoningRenderer.__init__",
+        "utils.reasoning_renderer.ReasoningRenderer.reset_turn",
+        "utils.reasoning_renderer.ReasoningRenderer._write"
+      ],
+      "duration_seconds": 4.3e-05
+    },
+    {
+      "name": "__main__.TestReasoningRenderer.test_stream_preview_and_fold",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.reasoning_renderer.ReasoningRenderer.handle_stream_chunk",
+        "utils.reasoning_renderer.ReasoningRenderer._emit_preview",
+        "utils.reasoning_renderer.ReasoningRenderer._emit_fold_notice_if_needed"
+      ],
+      "duration_seconds": 4.1e-05
+    },
+    {
+      "name": "__main__.TestRuntimeConfig.test_add_runtime_args_registers_flags",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.runtime_config.add_runtime_args"
+      ],
+      "duration_seconds": 0.000876
+    },
+    {
+      "name": "__main__.TestRuntimeConfig.test_runtime_options_as_dict",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.runtime_config.RuntimeOptions.as_dict"
+      ],
+      "duration_seconds": 6.5e-05
+    },
+    {
+      "name": "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.runtime_config.runtime_options_from_args",
+        "utils.runtime_config._resolve_bool",
+        "utils.runtime_config._resolve_enum",
+        "utils.runtime_config._resolve_int",
+        "utils.runtime_config._resolve_str",
+        "utils.runtime_config._read_normalized_env"
+      ],
+      "duration_seconds": 0.001461
+    },
+    {
+      "name": "__main__.TestSessionStore.test_disabled_store_and_helpers",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.session_store._sanitize_model_name",
+        "utils.session_store._now_iso"
+      ],
+      "duration_seconds": 0.001919
+    },
+    {
+      "name": "__main__.TestSessionStore.test_enabled_store_writes_events",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.session_store.SessionStore.__init__",
+        "utils.session_store.SessionStore.record_assistant",
+        "utils.session_store.SessionStore.record_tool",
+        "utils.session_store.SessionStore.get_path",
+        "utils.session_store.SessionStore._initialize_output_file",
+        "utils.session_store.SessionStore._build_event",
+        "utils.session_store.SessionStore._append"
+      ],
+      "duration_seconds": 0.001115
+    },
+    {
+      "name": "__main__.TestThinkingPolicy.test_build_thinking_params",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.thinking_policy.build_thinking_params"
+      ],
+      "duration_seconds": 4.9e-05
+    },
+    {
+      "name": "__main__.TestThinkingPolicy.test_enabled_state_and_param_translation",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.thinking_policy._resolve_enabled_state",
+        "utils.thinking_policy._params_for_enabled_state"
+      ],
+      "duration_seconds": 3.2e-05
+    },
+    {
+      "name": "__main__.TestThinkingPolicy.test_normalize_setting_and_styles",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.thinking_policy._normalize_setting",
+        "utils.thinking_policy._styles_to_probe"
+      ],
+      "duration_seconds": 3.2e-05
+    },
+    {
+      "name": "__main__.TestThinkingPolicy.test_probe_support",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.thinking_policy._probe_support"
+      ],
+      "duration_seconds": 3.4e-05
+    },
+    {
+      "name": "__main__.TestThinkingPolicy.test_resolve_thinking_policy",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.thinking_policy.resolve_thinking_policy"
+      ],
+      "duration_seconds": 5.2e-05
+    },
+    {
+      "name": "__main__.TestTraceLogger.test_trace_logger_enabled_and_disabled",
+      "status": "success",
+      "message": "",
+      "covers": [
+        "utils.trace_logger.TraceLogger.__init__",
+        "utils.trace_logger.TraceLogger.log_turn",
+        "utils.trace_logger._summarize_tool_call",
+        "utils.trace_logger._shorten"
+      ],
+      "duration_seconds": 0.000964
+    },
+    {
+      "name": "__main__.TestUtilsExports.test_export_set_stable",
+      "status": "success",
+      "message": "",
+      "covers": [],
+      "duration_seconds": 3.7e-05
+    }
+  ],
+  "function_completion": {
+    "utils.llm_call._build_request": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_build_request_and_strip"
+      ]
+    },
+    "utils.llm_call._coerce_text": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_low_level_coerce_read_and_dump_helpers"
+      ]
+    },
+    "utils.llm_call._collect_reasoning_segments": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call._extract_content_from_delta": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_stream_call_and_callbacks"
+      ]
+    },
+    "utils.llm_call._extract_content_from_message": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call._extract_first_delta": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_stream_call_and_callbacks"
+      ]
+    },
+    "utils.llm_call._extract_reasoning_from_delta": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_stream_call_and_callbacks"
+      ]
+    },
+    "utils.llm_call._extract_reasoning_from_message": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call._invoke_once": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call._invoke_stream": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_stream_call_and_callbacks"
+      ]
+    },
+    "utils.llm_call._invoke_with_optional_thinking_retry": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_invoke_with_optional_retry_reraises_non_thinking_errors",
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message",
+        "__main__.TestLLMCall.test_retry_then_success_for_thinking_params"
+      ]
+    },
+    "utils.llm_call._looks_like_thinking_param_error": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_thinking_error_signal_detection"
+      ]
+    },
+    "utils.llm_call._merge_stream_tool_calls": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_stream_call_and_callbacks"
+      ]
+    },
+    "utils.llm_call._normalize_tool_calls": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call._read_obj": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_low_level_coerce_read_and_dump_helpers"
+      ]
+    },
+    "utils.llm_call._safe_model_dump": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_low_level_coerce_read_and_dump_helpers"
+      ]
+    },
+    "utils.llm_call._strip_thinking_params": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_build_request_and_strip"
+      ]
+    },
+    "utils.llm_call.build_assistant_message": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.llm_call.call_chat_completion": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestEnvRealQueries.test_env_non_stream_real_query",
+        "__main__.TestEnvRealQueries.test_env_stream_real_query",
+        "__main__.TestLLMCall.test_non_stream_call_and_assistant_message"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer.__init__": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_renderer_init_reset_write"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer._build_hint": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_finalize_turn_and_expand_paths"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer._emit_fold_notice_if_needed": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_stream_preview_and_fold"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer._emit_preview": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_stream_preview_and_fold"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer._maybe_expand": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_finalize_turn_and_expand_paths"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer._write": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_renderer_init_reset_write"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer.finalize_turn": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_finalize_turn_and_expand_paths"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer.handle_stream_chunk": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_stream_preview_and_fold"
+      ]
+    },
+    "utils.reasoning_renderer.ReasoningRenderer.reset_turn": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestReasoningRenderer.test_renderer_init_reset_write"
+      ]
+    },
+    "utils.runtime_config.RuntimeOptions.as_dict": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_as_dict"
+      ]
+    },
+    "utils.runtime_config._read_normalized_env": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.runtime_config._resolve_bool": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.runtime_config._resolve_enum": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.runtime_config._resolve_int": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.runtime_config._resolve_str": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.runtime_config.add_runtime_args": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_add_runtime_args_registers_flags"
+      ]
+    },
+    "utils.runtime_config.runtime_options_from_args": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestRuntimeConfig.test_runtime_options_from_args_and_helpers"
+      ]
+    },
+    "utils.session_store.SessionStore.__init__": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore._append": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore._build_event": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore._initialize_output_file": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore.get_path": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore.record_assistant": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store.SessionStore.record_tool": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_enabled_store_writes_events"
+      ]
+    },
+    "utils.session_store._now_iso": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_disabled_store_and_helpers"
+      ]
+    },
+    "utils.session_store._sanitize_model_name": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestSessionStore.test_disabled_store_and_helpers"
+      ]
+    },
+    "utils.thinking_policy._normalize_setting": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_normalize_setting_and_styles"
+      ]
+    },
+    "utils.thinking_policy._params_for_enabled_state": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_enabled_state_and_param_translation"
+      ]
+    },
+    "utils.thinking_policy._probe_support": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_probe_support"
+      ]
+    },
+    "utils.thinking_policy._resolve_enabled_state": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_enabled_state_and_param_translation"
+      ]
+    },
+    "utils.thinking_policy._styles_to_probe": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_normalize_setting_and_styles"
+      ]
+    },
+    "utils.thinking_policy.build_thinking_params": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_build_thinking_params"
+      ]
+    },
+    "utils.thinking_policy.resolve_thinking_policy": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestThinkingPolicy.test_resolve_thinking_policy"
+      ]
+    },
+    "utils.trace_logger.TraceLogger.__init__": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestTraceLogger.test_trace_logger_enabled_and_disabled"
+      ]
+    },
+    "utils.trace_logger.TraceLogger.log_turn": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestTraceLogger.test_trace_logger_enabled_and_disabled"
+      ]
+    },
+    "utils.trace_logger._shorten": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestTraceLogger.test_trace_logger_enabled_and_disabled"
+      ]
+    },
+    "utils.trace_logger._summarize_tool_call": {
+      "status": "passed",
+      "tests": [
+        "__main__.TestTraceLogger.test_trace_logger_enabled_and_disabled"
+      ]
+    }
+  },
+  "uncovered_targets": [],
+  "failing_targets": [],
+  "declared_unknown_targets": {}
+}
