@@ -1,18 +1,41 @@
 #!/usr/bin/env python3
-"""Minimal tool-calling agent loop with improved CLI output."""
+"""
+Minimal tool-calling agent loop with improved CLI output.
+v01_agent_loop.py - The Agent Loop
 
-import argparse
-import json
+The entire secret of an AI coding agent in one pattern:
+
+    while stop_reason == "tool_use":
+        response = LLM(messages, tools)
+        execute tools
+        append results
+
+    +----------+      +-------+      +---------+
+    |   User   | ---> |  LLM  | ---> |  Tool   |
+    |  prompt  |      |       |      | execute |
+    +----------+      +---+---+      +----+----+
+                          ^               |
+                          |   tool_result |
+                          +---------------+
+                          (loop continues)
+
+This is the core loop: feed tool results back to the model
+until the model decides to stop. Production agents layer
+policy, hooks, and lifecycle controls on top.
+"""
+
 import os
-import subprocess
 import sys
+import json
+import argparse
+import subprocess
+from types import SimpleNamespace
 from typing import Any, Dict, List, Optional
 
-from dotenv import load_dotenv
 from openai import OpenAI
+from dotenv import load_dotenv
 
 sys.path.append(os.getcwd())
-
 
 load_dotenv(override = True)
 
@@ -30,8 +53,7 @@ TOOL = [
             "name": "bash",
             "description": """Execute shell command. Common patterns include:
 - Read: cat/head/tail, grep/find/rg/ls, wc -l
-- Write: echo 'content' > file, sed -i 's/old/new/g' file
-- Subagent: python v1_bash_agent_demo/bash_agent.py 'task description' (spawns isolated agent, returns summary)""",
+- Write: echo 'content' > file, sed -i 's/old/new/g' file""",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -52,6 +74,7 @@ client = OpenAI(
     base_url = os.getenv("LLM_BASE_URL") or None,
 )
 model = os.getenv("LLM_MODEL", "gpt-4o-mini")
+api_mode = "chat"
 
 
 def parse_args() -> argparse.Namespace:
@@ -85,6 +108,12 @@ def parse_args() -> argparse.Namespace:
         "--show-thinking",
         action = "store_true",
         help = "Print thinking/reasoning text if provider returns it."
+    )
+    parser.add_argument(
+        "--api-mode",
+        choices = ["chat", "responses"],
+        default = "chat",
+        help = "API backend mode: chat.completions or responses."
     )
     return parser.parse_args()
 
@@ -183,6 +212,62 @@ def build_chat_kwargs(
     return kwargs
 
 
+def normalize_messages_for_responses(
+    messages: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Normalize mixed message history to responses-compatible input.
+
+    Args:
+        messages: Full conversation message list.
+    """
+    normalized: List[Dict[str, Any]] = []
+    for item in messages:
+        if isinstance(item, dict):
+            role = item.get("role")
+            content = item.get("content", "")
+        else:
+            role = getattr(item, "role", None)
+            content = getattr(item, "content", "")
+
+        if role not in ["system", "user", "assistant", "tool"]:
+            continue
+
+        normalized.append({"role": role, "content": content})
+    return normalized
+
+
+def adapt_responses_to_chat_shape(response: Any) -> Any:
+    """Adapt responses output to chat.completions-like response shape.
+
+    Args:
+        response: Raw response object from client.responses.create.
+    """
+    tool_calls = []
+    for output_item in getattr(response, "output", []):
+        if getattr(output_item, "type", None) != "function_call":
+            continue
+
+        tool_calls.append(
+            SimpleNamespace(
+                id = getattr(output_item, "call_id", ""),
+                type = "function",
+                function = SimpleNamespace(
+                    name = getattr(output_item, "name", ""),
+                    arguments = getattr(output_item, "arguments", "{}"),
+                ),
+            )
+        )
+
+    message_like = SimpleNamespace(
+        content = getattr(response, "output_text", ""),
+        tool_calls = tool_calls,
+        reasoning = getattr(response, "reasoning", None),
+    )
+    return SimpleNamespace(
+        choices = [SimpleNamespace(message = message_like)]
+    )
+
+
 def create_chat_completion(
     messages: List[Dict[str, Any]],
     thinking_mode: str
@@ -193,6 +278,17 @@ def create_chat_completion(
         messages: Full conversation message list.
         thinking_mode: Thinking flag, one of auto/on/off.
     """
+    if api_mode == "responses":
+        response_input = normalize_messages_for_responses(messages = messages)
+        response = client.responses.create(
+            model = model,
+            input = response_input,
+            tools = TOOL,
+            tool_choice = "auto",
+            max_output_tokens = 16384,
+        )
+        return adapt_responses_to_chat_shape(response = response)
+
     kwargs = build_chat_kwargs(messages = messages, thinking_mode = thinking_mode)
     try:
         return client.chat.completions.create(**kwargs)
@@ -347,11 +443,13 @@ def agent_loop(
 
 if __name__ == "__main__":
     args = parse_args()
+    api_mode = args.api_mode
     history: List[Dict[str, Any]] = []
 
     print("\033[36m" + style_line("=") + "\033[0m")
     print("\033[36mv01 agent loop\033[0m")
     print(f"\033[36mmodel: Doubao-Seed-2.0\033[0m")
+    print(f"\033[36mapi mode: {args.api_mode}\033[0m")
     print(f"\033[36mthinking mode: {args.thinking}\033[0m")
     print("\033[36mtype 'q' / 'exit' / empty line to quit\033[0m")
     print("\033[36m" + style_line("=") + "\033[0m")
