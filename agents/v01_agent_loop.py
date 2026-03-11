@@ -39,7 +39,7 @@ sys.path.append(os.getcwd())
 
 load_dotenv(override = True)
 
-SYSTEM_PROMPT_PATH = "prompts/v01_agent_loop.md"
+SYSTEM_PROMPT_PATH = "prompts/v01-v02.md"
 
 with open(SYSTEM_PROMPT_PATH, "r") as f:
     system_prompt = f.read().strip()
@@ -74,7 +74,6 @@ client = OpenAI(
     base_url = os.getenv("LLM_BASE_URL") or None,
 )
 model = os.getenv("LLM_MODEL", "gpt-4o-mini")
-api_mode = "chat"
 
 
 def parse_args() -> argparse.Namespace:
